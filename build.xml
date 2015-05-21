@@ -1,0 +1,110 @@
+<project name="WebUITests" basedir="." default="">
+	<property name="repo" value="http://central.maven.org/maven2"/>
+
+	    <!-- To figure out compatible combinations of versions, you should examine dependencies in the Maven POM files -->
+		<property name="selenium-server.version" value="2.45.0"/>
+		<property name="selenium-java.version" value="2.45.0"/>
+		<property name="cobertura.version" value="2.1.1"/>
+		<property name="cucumber-core.version" value="1.2.2"/>
+		<property name="cucumber-java.version" value="1.2.2"/>
+		<property name="cucumber-junit.version" value="1.2.2"/>
+	    <property name="cucumber-jvm-deps.version" value="1.0.3"/>
+	    <property name="gherkin.version" value="2.12.2"/>
+	    <property name="cucumber-html.version" value="0.2.3"/>
+		<property name="mockito-all.version" value="1.10.19"/>
+		<property name="cucumber-reporting.version" value="0.0.24"/>
+	    <property name="junit.version" value="4.11"/>
+	    <property name="jars" value="lib"/>
+
+	    <target name="download">
+	        <mkdir dir="${jars}"/>
+	    	<get src="${repo}/org/seleniumhq/selenium/selenium-server/${selenium-server.version}/selenium-server-${selenium-server.version}.jar"
+	    		             dest="${jars}/selenium-server-${selenium-server.version}.jar"/>
+	    	<get src="${repo}/org/seleniumhq/selenium/selenium-java/${selenium-java.version}/selenium-java-${selenium-java.version}.jar"
+	    		    		             dest="${jars}/selenium-java-${selenium-java.version}.jar"/>
+	    	<get src="${repo}/net/sourceforge/cobertura/cobertura/${cobertura.version}/cobertura-${cobertura.version}.jar"
+	    		    		             dest="${jars}/cobertura-${cobertura.version}.jar"/>
+	        <get src="${repo}/info/cukes/cucumber-core/${cucumber-core.version}/cucumber-core-${cucumber-core.version}.jar"
+	             dest="${jars}/cucumber-core-${cucumber-core.version}.jar"/>
+	        <get src="${repo}/info/cukes/cucumber-java/${cucumber-java.version}/cucumber-java-${cucumber-java.version}.jar"
+	             dest="${jars}/cucumber-java-${cucumber-java.version}.jar"/>
+	    	<get src="${repo}/info/cukes/cucumber-junit/${cucumber-junit.version}/cucumber-junit-${cucumber-junit.version}.jar"
+	             dest="${jars}/cucumber-junit-${cucumber-junit.version}.jar"/>
+	    	<get src="${repo}/info/cukes/cucumber-jvm-deps/${cucumber-jvm-deps.version}/cucumber-jvm-deps-${cucumber-jvm-deps.version}.jar"
+	             dest="${jars}/cucumber-jvm-deps-${cucumber-jvm-deps.version}.jar"/>
+	    	<get src="${repo}/info/cukes/gherkin/${gherkin.version}/gherkin-${gherkin.version}.jar"
+	             dest="${jars}/gherkin-${gherkin.version}.jar"/>
+	    	<get src="${repo}/info/cukes/cucumber-html/${cucumber-html.version}/cucumber-html-${cucumber-html.version}.jar"
+	             dest="${jars}/cucumber-html-${cucumber-html.version}.jar"/>
+	    	<get src="${repo}/org/mockito/mockito-all/${mockito-all.version}/mockito-all-${mockito-all.version}.jar"
+	    		             dest="${jars}/mockito-all-${mockito-all.version}.jar"/>
+	    	<get src="${repo}/net/masterthought/cucumber-reporting/${cucumber-reporting.version}/cucumber-reporting-${cucumber-reporting.version}.jar"
+	    		    		             dest="${jars}/cucumber-reporting-${cucumber-reporting.version}.jar"/>
+	        <get src="${repo}/junit/junit/${junit.version}/junit-${junit.version}.jar"
+	             dest="${jars}/junit-${junit.version}.jar"/>
+	    	<copy file="C:/WebUITests/WebUIFramework/target/WebUiTestFramework-0.0.1.jar"
+	    		    		    		             tofile="C:/WebUITests/WebUITests/lib/WebUiTestFramework-0.0.1.jar"/>
+	    </target>
+	
+	
+	<target name="classpath">
+	        <path id="classpath">
+	            <fileset dir="${jars}">
+	                <include name="**/*.jar"/>
+	            	</fileset>
+	        	<pathelement location="Feature"/>
+	        	<pathelement location="target/classes"/>
+	        	<pathelement location="target/test-classes"/>
+	        </path>
+	    </target>
+
+	    <target name="compile" depends="classpath">
+	        <mkdir dir="target/classes"/>
+	        <javac srcdir="src/main/java/" destdir="target/classes"  includeantruntime="false"/>
+	    </target>
+
+	    <target name="compile-test" depends="compile,classpath">
+	        <mkdir dir="target/test-classes"/>
+	        <javac srcdir="src/main/java" destdir="target/test-classes" classpathref="classpath" includeantruntime="false"/>
+	    </target>
+	
+	<target name="runcukes" depends="compile">
+	        <mkdir dir="target/cucumber-junit-report"/>
+	        <java classname="cucumber.api.cli.Main" fork="true" failonerror="false" resultproperty="cucumber.exitstatus">
+	            <classpath refid="classpath"/>
+	            <arg value="--format"/>
+	            <arg value="junit:target/cucumber-junit-report.xml"/>
+	            <arg value="--format"/>
+	            <arg value="pretty"/>
+	            <arg value="--format"/>
+	            <arg value="html:target/cucumber-html-report"/>
+	            <arg value="--glue"/>
+	            <arg value="stepDefination"/>
+	        	<arg value="features"/>
+	            <arg value="Feature"/>
+	        </java>
+
+	        <junitreport todir="JUnitReport">
+	            <fileset dir="target">
+	                <include name="cucumber-junit-report.xml"/>
+	            </fileset>
+	            <report format="frames" todir="JUnitReport"/>
+	        </junitreport>
+
+	        <fail message="Cucumber failed">
+	            <condition>
+	                <not>
+	                    <equals arg1="${cucumber.exitstatus}" arg2="0"/>
+	                </not>
+	            </condition>
+	        </fail>
+	    </target>
+
+	    <target name="clean">
+	        <delete dir="target"/>
+	    </target>
+
+	    <target name="clobber" depends="clean">
+	        <delete dir="${jars}"/>
+	    </target>
+</project>
